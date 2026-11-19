@@ -18,6 +18,7 @@ DISP = (50.0, 69.2)           # 2.8" module outline
 ACTIVE = (43.2, 57.6)         # 2.8" active area
 TAIL = 8.0                    # margin below the last key row
 CELL = (18.6, 70.0)           # 18650, protected length
+CELL_TAIL = 18.0              # cell end to tail: leaves room for the USB-C receptacle
 
 
 def rect(name, cx, cy, w, h, kind="key", fill=None):
@@ -76,7 +77,7 @@ def svg_variant(name, keys, L, ox, oy):
     o.append(f'<rect x="{ax}" y="{NOSE+4}" width="{ACTIVE[0]}" height="{ACTIVE[1]}" fill="#1d3b5c"/>')
     o.append(f'<text x="{W/2}" y="{NOSE+4+ACTIVE[1]/2}" font-size="3.5" fill="#9bd">2.8" 240x320</text>')
     # 18650 behind the board (dashed)
-    o.append(f'<rect x="{(W-CELL[0])/2}" y="{L-10-CELL[1]}" width="{CELL[0]}" height="{CELL[1]}" rx="3" '
+    o.append(f'<rect x="{(W-CELL[0])/2}" y="{L-CELL_TAIL-CELL[1]}" width="{CELL[0]}" height="{CELL[1]}" rx="3" '
              f'fill="none" stroke="#fa0" stroke-width="0.3" stroke-dasharray="1.5 1"/>')
     for k in keys:
         if k["kind"] == "dpad":
