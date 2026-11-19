@@ -61,7 +61,7 @@ def build(numpad=True):
     return keys, length
 
 
-VARIANTS = {"full": build(True), "short": build(False)}
+VARIANTS = {"full": build(True)}   # add "short": build(False) to compare a numpad-less body
 
 
 # ----------------------------------------------------------------- SVG ----

@@ -1,8 +1,9 @@
 # FullZapette — design document
 
-Status: **draft v0.2** — nothing is built or measured yet; figures marked *(est.)* are estimates to be
-confirmed on a prototype. Changes since v0.1: 2.8" screen, 18650 cell with a trapezoid body, backlit keys,
-day-one targets defined, first layout mock-ups, Lovelace question answered (§12).
+Status: **draft v0.3** — nothing is built or measured yet; figures marked *(est.)* are estimates to be
+confirmed on a prototype. Changes since v0.2: `full` 37-key layout chosen, AMS confirmed for two-colour
+keycaps, Android TV targets named (Shield TV + Chromecast in two rooms), cell access by unscrewing the back,
+USB-C on the remote confirmed, M0 parts list added (§16).
 
 ## 1. Goal
 
@@ -19,17 +20,19 @@ device with real buttons, a colour screen, an IR blaster, and a native Home Assi
 | Wake on pickup | Accelerometer interrupt (primary) + capacitive grip electrode (keep-awake / false-wake filter) |
 | Charging cradle with pogo pins | Yes, passive cradle, plus USB-C on the remote |
 | All plastic parts 3D printable | 2 shells + keycaps + cradle, FDM, sized for a Bambu Lab X1C |
-| Buttons below the screen | Backlit hard keys; exact set to be settled on mock-ups (§8) |
+| Buttons below the screen | 37 backlit hard keys (§8) |
 
 **Day-one use case**
 
 | Target | Link | Notes |
 |---|---|---|
-| Android TV box | **Bluetooth LE HID** (the remote pairs like a Bluetooth remote/keyboard) | D-pad, OK, Back, Home, transport, works without Wi-Fi. Fallback: HA's Android TV Remote integration over Wi-Fi |
+| Nvidia Shield TV, and a Chromecast in another room | **Bluetooth LE HID** (the remote pairs with each box like a Bluetooth remote/keyboard) | D-pad, OK, Back, Home, transport, works without Wi-Fi. Fallback: HA's Android TV Remote integration over Wi-Fi |
 | LG TV | **IR** | Volume ±, mute, power off (LG uses the NEC protocol; a discrete "off" code exists — to be verified on the set) |
 | Lights | **Home Assistant** | Touchscreen page with toggles / dimmers / scenes |
 
 So the first activity, "Watch TV", maps navigation keys to BLE, volume and power to IR, and the screen to lights.
+Two boxes in two rooms means the remote keeps **one Bluetooth bond per box** and each activity names the box
+it talks to ("Watch TV — living room", "Watch TV — bedroom"); the same split applies to which lights page is shown.
 
 Non-goals for v1: microphone / voice (no Google Assistant button), RF 433 MHz, Zigbee/Thread, a real web browser.
 
@@ -50,13 +53,13 @@ Non-goals for v1: microphone / voice (no Google Assistant button), RF 433 MHz, Z
 |---|---|---|---|---|
 | D1 | MCU / radio | **ESP32-S3** module (Wi-Fi + BLE, native USB) | proposed | Talks to HA directly, BLE HID for Android TV, enough CPU/PSRAM for LVGL, µA sleep. See §12 for why not a Linux board |
 | D2 | Display | **2.8" IPS, 240 × 320, ST7789, SPI, capacitive touch** | **agreed** | More dashboard room; sets body width to 58 mm |
-| D3 | Keys | **SMD tact switches + printed keycaps, TCA8418 I²C scanner** | proposed | µA standby, one wake interrupt, buffers the key that caused the wake — first press never lost |
+| D3 | Keys | **37 keys, `full` layout (§8): SMD tact switches + printed keycaps, TCA8418 I²C scanner** | layout **agreed**, parts proposed | µA standby, one wake interrupt, buffers the key that caused the wake — first press never lost |
 | D4 | Key backlight | **White LEDs under translucent keycaps with opaque tops, PWM, on only in the dark** | **agreed (required)** | See §5.3 |
 | D5 | Wake | **Accelerometer motion interrupt** + any key; grip electrode as add-on | proposed | µA-level, no user action |
 | D6 | Sleep | **Light sleep** first minutes idle, then **deep sleep** | proposed | Instant resume, negligible long-term drain |
 | D7 | HA link | **HA WebSocket API, opened by the remote**, long-lived token | proposed | Connects the moment it wakes; no broker |
 | D8 | Battery | **One 18650, in spring contacts** | **agreed** | Most standard cell there is; ≈ 70 % more capacity than the flat Li-Po; drives the trapezoid body |
-| D9 | Charging | **USB-C + 2 pogo contacts**, power-path charger | proposed | Cradle adds drop-and-forget and a docked display mode |
+| D9 | Charging | **USB-C on the remote + 2 pogo contacts** for the cradle, power-path charger | **agreed** | Cradle adds drop-and-forget and a docked display mode |
 | D10 | Firmware | **Custom, ESP-IDF + LVGL** | **agreed** | Control over sleep/wake latency |
 
 ## 4. System architecture
@@ -113,8 +116,7 @@ flowchart LR
   - One small white LED on the PCB beside each key (or per pair of keys), ≈ 1 mA each, all on one PWM
     MOSFET (optionally 2 zones: navigation / numpad). ≈ 15–30 mA total when lit *(est.)*.
   - Keycaps printed in **translucent (natural) PETG with a black top skin**; the legend is the gap in the black
-    skin, so the legend itself glows. With an AMS this is a two-colour first layer; without one, a filament
-    swap after the first layers gives the same result with slightly recessed legends.
+    skin, so the legend itself glows. Printed face-down as a two-colour first layer on the AMS.
   - The top shell is opaque black with ≥ 1.6 mm walls; a printed black web between keys blocks light bleed.
   - Lit only when the remote is awake **and** the light sensor says it is dark; fades out with the screen.
 
@@ -135,7 +137,8 @@ flowchart LR
 - Because the user inserts the cell: **reverse-polarity protection** and an on-board protection circuit
   (over-discharge, over-current) are mandatory, whatever cell is used.
 - **Charger:** power-path type (BQ24074 class), ≈ 0.5–1 A (≈ 4–7 h full), NTC against the cell.
-- **Inputs:** USB-C (5.1 kΩ CC resistors, 5 V) and pogo pads, OR-ed so exposed pads are never live from USB.
+- **Inputs:** a **USB-C port on the tail of the remote** (5.1 kΩ CC resistors, 5 V) — charges without the cradle and
+  is also the flashing/debug port — and the pogo pads, OR-ed so exposed pads are never live from USB.
 - **Fuel gauge:** MAX17048 (I²C, no sense resistor).
 - **3.3 V rail:** low-quiescent regulator ≥ 600 mA (RT9080 / XC6220 class); at Li-ion voltages a linear
   regulator is already ≈ 88 % efficient.
@@ -187,15 +190,10 @@ dominates; the firmware levers are a short screen timeout and rejecting false wa
 - **Stay-awake:** while a hand is on the grip electrode, the idle timer is extended (dim 20 s, off 60 s).
 - **Docked:** powered, so radios stay connected; dim clock / now-playing page; HA can reach the remote.
 
-## 8. Key layout — to be settled on mock-ups
+## 8. Key layout
 
-The key set is **not frozen**: it gets decided by handling mock-ups. Two candidates are generated from one
-script, [`mockups/gen_mockup.py`](../mockups/gen_mockup.py):
-
-| Variant | Size | Keys | Content |
-|---|---|---|---|
-| `full` | 58 × 197 mm | 37 | everything below |
-| `short` | 58 × 159 mm | 25 | same without the numpad (numpad on the touchscreen) |
+**Chosen: the `full` layout — 37 keys, body 58 × 197 mm.** Positions and sizes can still be tuned after
+handling the printed dummy.
 
 Top to bottom under the screen:
 
@@ -204,21 +202,24 @@ Top to bottom under the screen:
 3. Menu · Mute · Last · Guide
 4. Rewind · Play/Pause · Fast-forward · Stop
 5. Red · Green · Yellow · Blue (slim)
-6. Numpad 1–9, -/--, 0, Enter (`full` only)
+6. Numpad 1–9, -/--, 0, Enter
 
-Putting the rockers beside the D-pad instead of below it keeps the whole navigation block under the thumb
-and saves ≈ 25 mm of length compared with v0.1.
-
-Mock-up files:
-
-- [`mockups/front-layout.svg`](../mockups/front-layout.svg) — both variants at 1:1. Print on paper at 100 %
-  (check the 50 mm bar), cut out, tape on a block.
-- `mockups/mockup_full.stl`, `mockups/mockup_short.stl` — solid dummies with the trapezoid body, key bumps
-  and screen recess, to judge size, grip and thumb reach. Print on the back, supports under the nose; both
-  fit the X1C bed straight.
-- To try another layout: edit `build()` in the script, run it, then `openscad -o mockup_full.stl mockup_full.scad`.
+| Group | Keys | Count |
+|---|---|---|
+| System / navigation | Power, Activity, Back, Home, Menu, Guide, Up, Down, Left, Right, OK | 11 |
+| Audio / channel | Vol+, Vol−, Mute, Ch+, Ch−, Last | 6 |
+| Transport | Rewind, Play/Pause, Fast-forward, Stop | 4 |
+| Colour | Red, Green, Yellow, Blue | 4 |
+| Numpad | 0–9, -/--, Enter | 12 |
 
 Every key is remappable per activity; legends show the default role only.
+
+Mock-up files, generated by [`mockups/gen_mockup.py`](../mockups/gen_mockup.py):
+
+- [`mockups/front-layout.svg`](../mockups/front-layout.svg) — 1:1 front view. Print on paper at 100 % (check the 50 mm bar).
+- `mockups/mockup_full.stl` — solid dummy with the trapezoid body, key bumps and screen recess, to judge size,
+  grip and thumb reach. Print on the back, supports under the nose; fits the X1C bed straight.
+- To adjust: edit `build()` in the script, run it, then `openscad -o mockup_full.stl mockup_full.scad`.
 
 ## 9. Mechanics
 
@@ -230,8 +231,9 @@ Every key is remappable per activity; legends show the default role only.
 - **Printed parts (X1C, 0.4 mm nozzle, PETG or ASA):**
   1. Top shell — face-down on a textured plate; screen ledge and key openings need no supports.
   2. Back shell — the 50° chamfers print without supports; perimeter lip + M2 screws into heat-set inserts.
-     Removing it gives access to the cell (a tool-less battery door can come later).
-  3. Keycaps — translucent body, black top skin (§5.3); D-pad as one rocking ring + separate OK; Vol/Ch rockers.
+     Unscrewing it is how the cell is changed (agreed; no battery door).
+  3. Keycaps — translucent body, black top skin, two-colour on the AMS (§5.3); D-pad as one rocking ring +
+     separate OK; Vol/Ch rockers.
   4. Light-blocking web between top shell and PCB (may be part of the top shell).
   5. Cradle body + base.
 - **Screen mounting:** cover glass in a recessed ledge on thin double-sided foam tape (also the dust seal).
@@ -244,12 +246,14 @@ Every key is remappable per activity; legends show the default role only.
 - **2 spring pogo pins** (5 V, GND) in the cradle mate with gold pads on the back flat near the tail.
   Dock detection = voltage present.
 - Cradle electronics: USB-C receptacle (5.1 kΩ CC resistors) → resettable fuse → pogo pins. No active parts.
+- The remote's own USB-C port stays reachable when docked is **not** a goal; it is for charging away from the cradle.
 - Remote side: reverse-polarity and short protection on the pads; pads are dead when undocked.
 
 ## 11. Firmware
 
 - **Stack:** ESP-IDF, LVGL 9, RMT-based IR (NEC, RC5/RC6, SIRC, Samsung, Panasonic, raw/learned), NimBLE HID
-  (consumer control + keyboard), HA WebSocket client.
+  (consumer control + keyboard, several bonded hosts, the active activity selects which one to connect to),
+  HA WebSocket client.
 - **Model:** *devices* (things with commands: IR codes, BLE keys, HA service calls) and *activities*
   (start/stop sequence + key map + touchscreen page), as on a Harmony.
 - **Home Assistant:**
@@ -312,7 +316,8 @@ Lovelace in the hand is the priority, an old phone in a printed shell does that 
 | Risk | Mitigation |
 |---|---|
 | Wake-to-usable latency feels slow (Wi-Fi / BLE reconnect) | IR independent of radios; queued keys; cached UI; measure in M0 |
-| Android TV does not wake from standby over BLE HID, or reconnects slowly | Test on the actual box in M0; fallbacks: HA Android TV Remote integration, HDMI-CEC via the LG TV's IR power |
+| Shield TV or Chromecast does not wake from standby over BLE HID, or reconnects slowly | Test on both boxes in M0; fallbacks: HA Android TV Remote integration, HDMI-CEC wake via the TV's IR power |
+| Switching between two bonded boxes is slow or confuses pairing | One bond per box, connect only to the active activity's box; test in M0 |
 | False wakes on a sofa drain the battery | Grip filter, tunable motion threshold, short timeout |
 | Printed keys feel cheap, rattle, or leak light | Prototype one key cluster with LEDs before the PCB; TPU keymat as plan B |
 | Backlit legends unreadable (too thin for a 0.4 mm nozzle) | Legend stroke ≥ 0.5 mm, large glyphs; try a 0.2 mm nozzle for keycaps |
@@ -332,9 +337,25 @@ Lovelace in the hand is the priority, an old phone in a printed shell does that 
 - **M4 — Cradle + docked mode.**
 - **M5 — Rev B** and build guide.
 
-## 16. Open questions
+## 16. M0 bench kit
 
-- **Q1 — Layout:** after handling the mock-ups: `full` or `short`? Keys to add or drop? Is 27 mm at the belly acceptable?
-- **Q2 — AMS:** is the X1C fitted with an AMS (decides how keycap legends are made)?
-- **Q3 — Android TV box model** (Chromecast, Shield, Freebox, TV-integrated…): affects BLE wake behaviour and key codes.
-- **Q4 — Cell access:** is unscrewing the back shell to change the cell acceptable for v1, or is a tool-less door wanted?
+Off-the-shelf parts to de-risk the design before any custom PCB:
+
+| Part | Purpose |
+|---|---|
+| ESP32-S3 dev board with PSRAM (DevKitC-1 N8R8 or similar) | firmware base, sleep and radio measurements |
+| 2.8" IPS ST7789 capacitive-touch breakout (240 × 320) | UI, and candidate for the final panel |
+| LIS3DH / LIS2DH12 breakout | wake-on-pickup |
+| TCA8418 breakout + a handful of tact switches | key wake, first-press capture |
+| 940 nm IR LED + logic-level MOSFET, TSMP58000 or TSOP38238 receiver | LG volume / power, code learning |
+| 18650 + holder + charger breakout | realistic supply for current measurements |
+| A current-measuring tool (Nordic PPK2 or similar) | sleep and active budget — the numbers in §6 depend on it |
+
+Tests: pair with Shield TV and Chromecast, wake each from standby, switch between them; LG IR codes;
+wake-to-screen and wake-to-HA time; sleep currents; one HA light toggled from a touch widget.
+
+## 17. Open questions
+
+- **Q1 — Dummy feedback:** once `mockup_full.stl` is printed: is 197 mm long / 27 mm at the belly comfortable?
+  Any key to move, enlarge, add or drop?
+- **Q2 — Display part:** which exact 2.8" panel to freeze on (decided after M0 with the breakout in hand).

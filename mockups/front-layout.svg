@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="156.0mm" height="234.95mm" viewBox="0 0 156.0 234.95">
-<rect width="156.0" height="234.95" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="78.0mm" height="234.95mm" viewBox="0 0 78.0 234.95">
+<rect width="78.0" height="234.95" fill="#fff"/>
 <g transform="translate(10.0,10.0)" font-family="sans-serif" text-anchor="middle">
 <rect x="0" y="0" width="58.0" height="196.95" rx="8" fill="#2b2b2e" stroke="#000" stroke-width="0.3"/>
 <circle cx="20.0" cy="4.5" r="1.8" fill="#522"/>
@@ -74,57 +74,6 @@
 <rect x="39.5" y="181.45" width="13" height="7.5" rx="2" fill="#55565c"/>
 <text x="46.0" y="186.2" font-size="2.4" fill="#fff">ENT</text>
 <text x="29.0" y="202.95" font-size="3.5" fill="#000">full: 58 x 197 mm</text>
-</g>
-<g transform="translate(88.0,10.0)" font-family="sans-serif" text-anchor="middle">
-<rect x="0" y="0" width="58.0" height="158.95" rx="8" fill="#2b2b2e" stroke="#000" stroke-width="0.3"/>
-<circle cx="20.0" cy="4.5" r="1.8" fill="#522"/>
-<circle cx="29.0" cy="4.5" r="1.8" fill="#522"/>
-<circle cx="38.0" cy="4.5" r="1.8" fill="#522"/>
-<rect x="4.0" y="10.0" width="50.0" height="69.2" rx="1.5" fill="#0c0c0e"/>
-<rect x="7.399999999999999" y="14.0" width="43.2" height="57.6" fill="#1d3b5c"/>
-<text x="29.0" y="42.8" font-size="3.5" fill="#9bd">2.8" 240x320</text>
-<rect x="19.7" y="78.94999999999999" width="18.6" height="70.0" rx="3" fill="none" stroke="#fa0" stroke-width="0.3" stroke-dasharray="1.5 1"/>
-<rect x="3.25" y="82.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="8.75" y="87.7" font-size="2.4" fill="#fff">PWR</text>
-<rect x="16.75" y="82.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="22.25" y="87.7" font-size="2.4" fill="#fff">BACK</text>
-<rect x="30.25" y="82.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="35.75" y="87.7" font-size="2.4" fill="#fff">HOME</text>
-<rect x="43.75" y="82.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="49.25" y="87.7" font-size="2.4" fill="#fff">ACT</text>
-<circle cx="29.0" cy="108.7" r="15.0" fill="#55565c"/>
-<circle cx="29.0" cy="108.7" r="7.0" fill="#2b2b2e"/>
-<circle cx="29.0" cy="108.7" r="6.0" fill="#6a6b72"/>
-<text x="29.0" y="109.7" font-size="2.8" fill="#fff">OK</text>
-<rect x="2.25" y="93.7" width="9.5" height="30" rx="2" fill="#55565c"/>
-<text x="7.0" y="99.7" font-size="3.2" fill="#fff">+</text>
-<text x="7.0" y="109.7" font-size="2.2" fill="#fff">VOL</text>
-<text x="7.0" y="119.7" font-size="3.2" fill="#fff">-</text>
-<rect x="46.25" y="93.7" width="9.5" height="30" rx="2" fill="#55565c"/>
-<text x="51.0" y="99.7" font-size="3.2" fill="#fff">+</text>
-<text x="51.0" y="109.7" font-size="2.2" fill="#fff">CH</text>
-<text x="51.0" y="119.7" font-size="3.2" fill="#fff">-</text>
-<rect x="3.25" y="126.94999999999999" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="8.75" y="131.7" font-size="2.4" fill="#fff">MENU</text>
-<rect x="16.75" y="126.94999999999999" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="22.25" y="131.7" font-size="2.4" fill="#fff">MUTE</text>
-<rect x="30.25" y="126.94999999999999" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="35.75" y="131.7" font-size="2.4" fill="#fff">LAST</text>
-<rect x="43.75" y="126.94999999999999" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="49.25" y="131.7" font-size="2.4" fill="#fff">GUIDE</text>
-<rect x="3.25" y="136.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="8.75" y="141.7" font-size="2.4" fill="#fff">REW</text>
-<rect x="16.75" y="136.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="22.25" y="141.7" font-size="2.4" fill="#fff">PLAY</text>
-<rect x="30.25" y="136.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="35.75" y="141.7" font-size="2.4" fill="#fff">FF</text>
-<rect x="43.75" y="136.95" width="11" height="7.5" rx="2" fill="#55565c"/>
-<text x="49.25" y="141.7" font-size="2.4" fill="#fff">STOP</text>
-<rect x="3.25" y="146.45" width="11" height="4.5" rx="2" fill="#d33"/>
-<rect x="16.75" y="146.45" width="11" height="4.5" rx="2" fill="#3a3"/>
-<rect x="30.25" y="146.45" width="11" height="4.5" rx="2" fill="#dc2"/>
-<rect x="43.75" y="146.45" width="11" height="4.5" rx="2" fill="#36c"/>
-<text x="29.0" y="164.95" font-size="3.5" fill="#000">short: 58 x 159 mm</text>
 </g>
 <path d="M10.0,228.95 h50 M10.0,227.45 v3 M60.0,227.45 v3" stroke="#000" stroke-width="0.3" fill="none"/>
 <text x="35.0" y="227.45" font-size="3" text-anchor="middle" font-family="sans-serif">50 mm - check after printing</text>
