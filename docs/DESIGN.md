@@ -134,6 +134,7 @@ PCB** — no schematic or copper exists yet; that is milestone M2.
 - The D-pad ring presses 4 switches (Up/Down/Left/Right) around the OK switch; each rocker presses 2.
 - No per-key diodes: a remote never needs three keys at once, and the TCA8418 handles two-key presses.
 - **37 backlight LEDs**: one beside each plain key, four on the D-pad diagonals, one under OK, two per rocker.
+- **Touch wheel**: four copper sectors under the D-pad ring (§5.3.2); the D-pad switches are the small 3 × 4 mm type.
 - Back side (dashed): ESP32-S3 at the nose, 18650 along the spine, TCA8418 beside the cell, USB-C at the tail.
   The cell sits 18 mm from the tail so the USB-C receptacle fits behind it.
 
@@ -154,6 +155,27 @@ Open points this drawing exposes: the colour-key switches are taller than the vi
 cap flange hides them, but a smaller switch may be cleaner); mounting-hole positions are tentative until the
 shell is drawn; the pogo pads need a home on the back near the tail, clear of the cell.
 
+### 5.3.2 Capacitive wheel on the D-pad ring (proposed, to be prototyped)
+
+The D-pad ring doubles as a touch wheel, iPod-style: slide a finger around it to scroll a list, change
+volume or dim a light; press it at a cardinal point for a real click.
+
+- **Sensing:** four copper sector electrodes on the PCB under the ring, between the cardinal switches, read
+  by four ESP32-S3 touch pins (no extra chip). Finger angle is interpolated from the ratio of neighbouring
+  sectors. Only sampled while awake; the wheel is not a wake source.
+- **Clicks:** unchanged — the ring still rocks onto four tact switches, OK stays a separate centre key.
+  The four switches shrink to 3 × 4 mm, long side radial, so the electrodes cover ≈ 60° of each quadrant.
+- **Feedback while scrolling:** a haptic "tick" every step (e.g. every 15–20°). A crisp tick needs a small
+  **LRA with a haptic driver (DRV2605L class)** instead of the plain coin motor — upgraded in §5.5.
+- **Ring cap:** solid plastic down to ≈ 0.3 mm above the PCB (plastic couples far better than an air gap),
+  with pockets for the switches and LEDs. Translucent body, so the ring backlight still works.
+- **Firmware rules:** a resting thumb must not scroll — motion starts only after ≈ 25° of travel; a click
+  cancels any scroll in progress; scrolling is off unless the current page or activity uses it.
+- **Risk and fallback:** sensing through ≈ 3 mm of printed plastic on a moving cap is the uncertain part.
+  The electrodes are free on the PCB, so if it underperforms the firmware ignores them and the D-pad works as
+  a plain D-pad. Plan B is a thin flex/PCB electrode ring glued under the cap face (much stronger signal,
+  needs a flex tail). Validate on the M1 key-cluster prototype before the main PCB.
+
 ### 5.4 Infrared
 - **Transmit:** 3 × 940 nm emitters — one narrow straight ahead, two wide splayed ≈ 30° — MOSFET-switched from
   the battery rail with a bulk capacitor, modulated by the RMT peripheral, ≈ 300–500 mA peak per LED.
@@ -163,7 +185,7 @@ shell is drawn; the pogo pads need a home on the back near the tail, clear of th
 ### 5.5 Sensors and feedback
 - **Accelerometer:** LIS2DH12 (or BMA400), low-power motion-threshold interrupt, a few µA. Also "face-down = sleep".
 - **Grip electrode:** copper pour along the PCB edges / foil in the back shell on an ESP32-S3 touch pin.
-- **Haptic:** small coin vibration motor for touchscreen feedback and "find me".
+- **Haptic:** small LRA + DRV2605L-class driver (I²C) for wheel ticks, touchscreen feedback and "find me".
 
 ### 5.6 Power
 - **Cell:** one **18650**, 3000–3500 mAh, held in PCB leaf-spring contacts inside a printed cradle in the back
@@ -353,6 +375,7 @@ Lovelace in the hand is the priority, an old phone in a printed shell does that 
 | Shield TV or Chromecast does not wake from standby over BLE HID, or reconnects slowly | Test on both boxes in M0; fallbacks: HA Android TV Remote integration, HDMI-CEC wake via the TV's IR power |
 | Switching between two bonded boxes is slow or confuses pairing | One bond per box, connect only to the active activity's box; test in M0 |
 | False wakes on a sofa drain the battery | Grip filter, tunable motion threshold, short timeout |
+| Touch wheel too weak through the printed ring, or scrolls by accident | Prototype in M1; movement threshold; fallback to plain D-pad or flex electrode ring (§5.3.2) |
 | Printed keys feel cheap, rattle, or leak light | Prototype one key cluster with LEDs before the PCB; TPU keymat as plan B |
 | Backlit legends unreadable (too thin for a 0.4 mm nozzle) | Legend stroke ≥ 0.5 mm, large glyphs; try a 0.2 mm nozzle for keycaps |
 | Display variant mismatch | Freeze one exact part number before CAD |
@@ -365,7 +388,7 @@ Lovelace in the hand is the priority, an old phone in a printed shell does that 
 - **M0 — Bench proof (dev kit):** ESP32-S3 + display + accelerometer + IR LED. Measure sleep currents and
   wake-to-HA time; pair as BLE HID with the Android TV; LG volume/power over IR; one light toggled through HA.
 - **M1 — Mock-ups:** print the dummies, settle size, key set and pitch. Then one real key cluster with
-  switches, LEDs and translucent caps to validate feel and backlight.
+  switches, LEDs, translucent caps and the touch-wheel electrodes to validate feel, backlight and wheel sensing.
 - **M2 — PCB rev A.**
 - **M3 — Firmware v0:** "Watch TV" activity end-to-end, IR learn, mirrored HA page, sleep/wake state machine.
 - **M4 — Cradle + docked mode.**

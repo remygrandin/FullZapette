@@ -92,6 +92,15 @@ for x, y in ((6.5, 8.5), (W - 6.5, 8.5), (5.5, 152.7), (W - 5.5, 152.7)):
 for i in (-1, 0, 1):
     o.append(f'<rect x="{W/2+i*9-1.5}" y="4.2" width="3" height="3" rx="1.5" fill="#7f1d1d" stroke="#fca5a5" stroke-width="0.2"/>')
 
+# capacitive wheel: four sector electrodes under the d-pad ring, between the cardinal switches
+import math
+R_IN, R_OUT, HALF = 7.4, 14.6, 30.0
+for q in range(4):
+    a0, a1 = math.radians(45 + 90 * q - HALF), math.radians(45 + 90 * q + HALF)
+    P = lambda r, a: f"{dp['cx'] + r * math.cos(a):.2f},{dp['cy'] + r * math.sin(a):.2f}"
+    o.append(f'<path d="M{P(R_IN, a0)} L{P(R_OUT, a0)} A{R_OUT},{R_OUT} 0 0 1 {P(R_OUT, a1)} '
+             f'L{P(R_IN, a1)} A{R_IN},{R_IN} 0 0 0 {P(R_IN, a0)} Z" fill="#c2853a" fill-opacity="0.85" '
+             f'stroke="#f0c27a" stroke-width="0.15"/>')
 # H nets
 for i, h in enumerate(H):
     pts = " ".join(f"{x},{y}" for n, x, y, _ in h if n != "OK")
@@ -108,28 +117,34 @@ for x, y, rot in leds:
 # switches
 for h in H:
     for name, x, y, v in h:
-        o.append(f'<rect x="{x-SW/2}" y="{y-SW/2}" width="{SW}" height="{SW}" rx="0.4" fill="#d4d4d8" stroke="#52525b" stroke-width="0.2"/>')
-        o.append(f'<circle cx="{x}" cy="{y}" r="1.6" fill="#27272a"/>')
-        o.append(f'<circle cx="{x-SW/2}" cy="{y-SW/2}" r="0.9" fill="{VCOL[v]}" stroke="#000" stroke-width="0.12"/>')
+        sw, sh = SW, SW
+        if name in ("UP", "DOWN"):
+            sw, sh = 3.0, 4.0          # small 3 x 4 mm switches, long side radial, to leave room for the wheel
+        elif name in ("LEFT", "RIGHT"):
+            sw, sh = 4.0, 3.0
+        o.append(f'<rect x="{x-sw/2}" y="{y-sh/2}" width="{sw}" height="{sh}" rx="0.4" fill="#d4d4d8" stroke="#52525b" stroke-width="0.2"/>')
+        o.append(f'<circle cx="{x}" cy="{y}" r="{1.6 if sw == SW else 1.1}" fill="#27272a"/>')
+        o.append(f'<circle cx="{x-sw/2}" cy="{y-sh/2}" r="0.9" fill="{VCOL[v]}" stroke="#000" stroke-width="0.12"/>')
         o.append(f'<text x="{x}" y="{y+SW/2+2}" font-size="1.7" fill="#fff" text-anchor="middle">{name}</text>')
 # legend
 lx, ly = W + 5, 12
 o.append(f'<text x="{lx}" y="{ly}" font-size="3" font-weight="bold">Key board, front side</text>')
 o.append(f'<text x="{lx}" y="{ly+4}" font-size="2.2">{W-2*EDGE:.0f} x {L-12:.0f} mm, 37 switches, {len(leds)} LEDs</text>')
-items = [("#d4d4d8", "tact switch 5.2 x 5.2 mm"), ("#fef9c3", "white backlight LED (0603)"),
+items = [("#d4d4d8", "tact switch (3 x 4 mm under the ring)"), ("#fef9c3", "white backlight LED (0603)"),
+         ("#c2853a", "touch-wheel electrode (4 sectors)"),
          ("#86efac", "H line = one key row (H0-H9)")]
 for i, (c, t) in enumerate(items):
     o.append(f'<rect x="{lx}" y="{ly+9+i*5}" width="3" height="3" fill="{c}" stroke="#555" stroke-width="0.15"/>')
     o.append(f'<text x="{lx+4.5}" y="{ly+11.4+i*5}" font-size="2.2">{t}</text>')
-o.append(f'<text x="{lx}" y="{ly+28}" font-size="2.2">Dot on each switch = its V line:</text>')
+o.append(f'<text x="{lx}" y="{ly+33}" font-size="2.2">Dot on each switch = its V line:</text>')
 for i, c in enumerate(VCOL):
-    o.append(f'<circle cx="{lx+1.5+i*8}" cy="{ly+32}" r="1.3" fill="{c}" stroke="#000" stroke-width="0.12"/>')
-    o.append(f'<text x="{lx+3.5+i*8}" y="{ly+32.8}" font-size="2.2">V{i}</text>')
-o.append(f'<rect x="{lx}" y="{ly+37}" width="3" height="3" fill="none" stroke="#d97706" stroke-width="0.25" stroke-dasharray="1.2 0.8"/>')
-o.append(f'<text x="{lx+4.5}" y="{ly+39.4}" font-size="2.2">part on the back side</text>')
-o.append(f'<circle cx="{lx+1.5}" cy="{ly+44.5}" r="1.1" fill="#fff" stroke="#c9a227" stroke-width="0.4"/>')
-o.append(f'<text x="{lx+4.5}" y="{ly+45.3}" font-size="2.2">M2 mounting hole (tentative)</text>')
-o.append(f'<text x="{lx}" y="{ly+53}" font-size="2" fill="#555">Placement concept, not a routed PCB.</text>')
+    o.append(f'<circle cx="{lx+1.5+i*8}" cy="{ly+37}" r="1.3" fill="{c}" stroke="#000" stroke-width="0.12"/>')
+    o.append(f'<text x="{lx+3.5+i*8}" y="{ly+37.8}" font-size="2.2">V{i}</text>')
+o.append(f'<rect x="{lx}" y="{ly+42}" width="3" height="3" fill="none" stroke="#d97706" stroke-width="0.25" stroke-dasharray="1.2 0.8"/>')
+o.append(f'<text x="{lx+4.5}" y="{ly+44.4}" font-size="2.2">part on the back side</text>')
+o.append(f'<circle cx="{lx+1.5}" cy="{ly+49.5}" r="1.1" fill="#fff" stroke="#c9a227" stroke-width="0.4"/>')
+o.append(f'<text x="{lx+4.5}" y="{ly+50.3}" font-size="2.2">M2 mounting hole (tentative)</text>')
+o.append(f'<text x="{lx}" y="{ly+58}" font-size="2" fill="#555">Placement concept, not a routed PCB.</text>')
 o.append("</svg>")
 OUT.write_text("\n".join(o))
 
